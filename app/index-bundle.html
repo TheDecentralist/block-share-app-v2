@@ -1280,7 +1280,7 @@ function Sheet({ title, onClose, children }) {
 /* Generic "coming soon" sub-screen so every route resolves -------------- */
 function StubScreen({ title, body, navigate }) {
   return h('div', { className: 'bs-screen bs-enter' },
-    h(AppBar, { title: title || 'Soon', onBack: () => history.back() }),
+    h(AppBar, { title: title || 'Soon', onBack: () => navigate('#/home') }),
     h(EmptyState, { icon: 'clock', title: title || 'Coming soon',
       body: body || 'This screen is part of the next build phase. The design system, navigation and session are all in place — it just needs wiring to its endpoint.',
       action: h('button', { className: 'bs-btn bs-btn-ghost bs-btn-md', onClick: () => navigate('#/home') }, 'Back to Home') }));
