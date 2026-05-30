@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1"/>
+<title>Blockshare</title>
+
+<!--
+  app.blockshare.ca — the cohesive Blockshare web app.
+  Served from /app/ (BlockShare Static Pages). Sign-up at /signup.html feeds in.
+
+  API base resolves from (in order): ?api= → window.BS_CONFIG.apiBase →
+  this meta tag → '/wp-json/blockshare/v1'.
+  Add ?mocks=1 to force the bundled sample data (useful for demos / offline).
+-->
+<meta name="bs-api-base" content="/wp-json/blockshare/v1"/>
+<!-- DEMO MODE: set content="1" to explore with sample data and no sign-in.
+     Set to "0" (or delete this line) for production so the real auth guard + API take over. -->
+<meta name="bs-demo" content="1"/>
+<meta name="theme-color" content="#FAF6F0"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,0..100,0..1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<link rel="stylesheet" href="app.css"/>
+
+<template id="__bundler_thumbnail" data-bg-color="#3E6B5C">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#3E6B5C"/>
+    <g transform="translate(600 400)">
+      <g transform="translate(-180 -150)">
+        <path d="M0 90 L180 -60 L360 90 L360 270 L0 270 Z" fill="#F3EFE6"/>
+        <rect x="62" y="150" width="84" height="120" fill="#3E6B5C"/>
+        <rect x="220" y="150" width="84" height="84" fill="#3E6B5C"/>
+      </g>
+    </g>
+    <text x="600" y="690" text-anchor="middle" font-family="Georgia, serif" font-size="58" font-style="italic" fill="#F3EFE6">Blockshare</text>
+  </svg>
+</template>
+</head>
+<body class="bs-body">
+
+<div id="bs-root">
+  <!-- Splash while React boots -->
+  <div class="bs-center-screen" id="bs-splash">
+    <div class="bs-spinner"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Store loads first (plain JS, defines window.BS) -->
+<script src="bs-store.js"></script>
+
+<!-- UI primitives, screens, then the shell (all Babel/JSX) -->
+<script type="text/babel" src="bs-ui.jsx"></script>
+<script type="text/babel" src="screen-home.jsx"></script>
+<script type="text/babel" src="screen-stuff.jsx"></script>
+<script type="text/babel" src="screen-food.jsx"></script>
+<script type="text/babel" src="screen-me.jsx"></script>
+<script type="text/babel" src="screen-item.jsx"></script>
+<script type="text/babel" src="app-shell.jsx"></script>
+
+</body>
+</html>
