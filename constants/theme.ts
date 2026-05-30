@@ -58,6 +58,11 @@ export const SECTION_COLORS = {
     light: '#E8F6F3',
     dark: '#148F77',
   },
+  community: {
+    primary: COLORS.community,
+    light: '#F5EEF8',
+    dark: '#7D3C98',
+  },
 };
 
 export const SPACING = {

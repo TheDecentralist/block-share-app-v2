@@ -10,7 +10,6 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textLight,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabBarLabel,
@@ -22,6 +21,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
+          tabBarActiveTintColor: SECTION_COLORS.home.primary,
           headerStyle: { backgroundColor: SECTION_COLORS.home.primary },
           headerTintColor: COLORS.white,
           headerTitleStyle: { fontWeight: '700' },
@@ -34,6 +34,7 @@ export default function TabLayout() {
         name="stuff"
         options={{
           title: 'Stuff',
+          tabBarActiveTintColor: SECTION_COLORS.stuff.primary,
           headerStyle: { backgroundColor: SECTION_COLORS.stuff.primary },
           headerTintColor: COLORS.white,
           headerTitleStyle: { fontWeight: '700' },
@@ -46,6 +47,7 @@ export default function TabLayout() {
         name="food"
         options={{
           title: 'Food',
+          tabBarActiveTintColor: SECTION_COLORS.food.primary,
           headerStyle: { backgroundColor: SECTION_COLORS.food.primary },
           headerTintColor: COLORS.white,
           headerTitleStyle: { fontWeight: '700' },
@@ -58,9 +60,8 @@ export default function TabLayout() {
         name="me"
         options={{
           title: 'Me',
-          headerStyle: { backgroundColor: SECTION_COLORS.me.primary },
-          headerTintColor: COLORS.white,
-          headerTitleStyle: { fontWeight: '700' },
+          tabBarActiveTintColor: SECTION_COLORS.me.primary,
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <User size={size} color={color} strokeWidth={2} />
           ),

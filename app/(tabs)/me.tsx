@@ -9,12 +9,13 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { 
+import {
   CreditCard,
   Package,
-  Star,
   ChevronRight,
   Award,
   BookOpen,
@@ -33,31 +34,49 @@ import { MOCK_CURRENT_USER, MOCK_HOST_USER } from '@/mocks/data';
 
 export default function MeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   // Toggle between regular user and host for demo
   const user = MOCK_CURRENT_USER; // Change to MOCK_HOST_USER to see Host view
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Profile Header */}
-      <View style={styles.profileHeader}>
-        <Image 
-          source={{ uri: user.avatar }} 
-          style={styles.avatar}
-        />
-        <View style={styles.profileInfo}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>{user.firstName} {user.lastName}</Text>
-            {user.isHost && (
-              <View style={styles.hostBadge}>
-                <Award size={12} color={COLORS.white} />
-                <Text style={styles.hostBadgeText}>Host</Text>
-              </View>
-            )}
+      <StatusBar barStyle="light-content" />
+
+      {/* Profile Hero Header */}
+      <View style={[styles.profileHero, { paddingTop: insets.top + SPACING.md }]}>
+        <Image source={{ uri: user.avatar }} style={styles.avatar} />
+
+        <View style={styles.nameRow}>
+          <Text style={styles.heroName}>{user.firstName} {user.lastName}</Text>
+          {user.isHost && (
+            <View style={styles.hostBadge}>
+              <Award size={12} color={COLORS.white} />
+              <Text style={styles.hostBadgeText}>Host</Text>
+            </View>
+          )}
+        </View>
+
+        <Text style={styles.heroLocation}>{user.buildingName} · {user.location}</Text>
+        <Text style={styles.heroMemberSince}>
+          Member since {user.memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+        </Text>
+
+        {/* Quick stats row */}
+        <View style={styles.heroStats}>
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatNumber}>3</Text>
+            <Text style={styles.heroStatLabel}>sharing</Text>
           </View>
-          <Text style={styles.location}>{user.buildingName} • {user.location}</Text>
-          <Text style={styles.memberSince}>
-            Member since {user.memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-          </Text>
+          <View style={styles.heroStatDivider} />
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatNumber}>{user.rating?.asLender.toFixed(1)}</Text>
+            <Text style={styles.heroStatLabel}>lender ★</Text>
+          </View>
+          <View style={styles.heroStatDivider} />
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatNumber}>{user.rating?.asBorrower.toFixed(1)}</Text>
+            <Text style={styles.heroStatLabel}>borrower ★</Text>
+          </View>
         </View>
       </View>
 
@@ -74,27 +93,14 @@ export default function MeScreen() {
       {/* My Contributions */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Contributions</Text>
-        
+
         <TouchableOpacity style={styles.menuItem}>
           <View style={[styles.menuIcon, { backgroundColor: SECTION_COLORS.stuff.light }]}>
             <Package size={20} color={SECTION_COLORS.stuff.primary} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuLabel}>Items I'm Sharing</Text>
-            <Text style={styles.menuValue}>3 items</Text>
-          </View>
-          <ChevronRight size={20} color={COLORS.textLight} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={[styles.menuIcon, { backgroundColor: SECTION_COLORS.home.light }]}>
-            <Star size={20} color={SECTION_COLORS.home.primary} />
-          </View>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuLabel}>My Ratings</Text>
-            <Text style={styles.menuValue}>
-              {user.rating?.asLender.toFixed(1)} as lender • {user.rating?.asBorrower.toFixed(1)} as borrower
-            </Text>
+            <Text style={styles.menuValue}>3 items active</Text>
           </View>
           <ChevronRight size={20} color={COLORS.textLight} />
         </TouchableOpacity>
@@ -119,10 +125,8 @@ export default function MeScreen() {
       {user.isHost && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Host Tools</Text>
-            <View style={styles.hostIndicator}>
-              <Award size={14} color={SECTION_COLORS.host.primary} />
-            </View>
+            <Award size={16} color={SECTION_COLORS.host.primary} />
+            <Text style={styles.sectionTitleInline}>Host Tools</Text>
           </View>
 
           <TouchableOpacity 
@@ -254,34 +258,31 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
 
-  // Profile Header
-  profileHeader: {
-    flexDirection: 'row',
+  // Profile Hero Header
+  profileHero: {
+    backgroundColor: SECTION_COLORS.me.primary,
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    padding: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xl,
   },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    marginRight: SPACING.md,
-  },
-  profileInfo: {
-    flex: 1,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.8)',
+    marginBottom: SPACING.md,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
   },
-  name: {
+  heroName: {
     fontSize: FONT_SIZES.xl,
     fontWeight: '700',
-    color: COLORS.text,
+    color: COLORS.white,
   },
   hostBadge: {
     flexDirection: 'row',
@@ -297,14 +298,42 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.white,
   },
-  location: {
+  heroLocation: {
     fontSize: FONT_SIZES.md,
-    color: COLORS.textLight,
+    color: 'rgba(255,255,255,0.85)',
     marginBottom: 2,
   },
-  memberSince: {
+  heroMemberSince: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
+    color: 'rgba(255,255,255,0.7)',
+    marginBottom: SPACING.lg,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    width: '100%',
+  },
+  heroStat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  heroStatNumber: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    color: COLORS.white,
+  },
+  heroStatLabel: {
+    fontSize: FONT_SIZES.xs,
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: 2,
+  },
+  heroStatDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    marginHorizontal: SPACING.sm,
   },
 
   // Credits Card
@@ -356,8 +385,10 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.md,
   },
-  hostIndicator: {
-    marginBottom: SPACING.md,
+  sectionTitleInline: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.text,
   },
 
   // Menu Items

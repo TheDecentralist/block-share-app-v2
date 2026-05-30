@@ -11,16 +11,17 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { 
-  TrendingUp, 
-  Clock, 
-  Package, 
-  Truck, 
+import {
+  TrendingUp,
+  Clock,
+  Package,
+  Truck,
   Vote,
   ChevronRight,
   Megaphone,
   Users,
   Award,
+  PlusCircle,
 } from 'lucide-react-native';
 import { COLORS, SECTION_COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 import { MOCK_CURRENT_USER, MOCK_ITEMS, MOCK_ACTIVE_VOTE, MOCK_FOOD_SUBSCRIPTION } from '@/mocks/data';
@@ -69,7 +70,7 @@ export default function HomeScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickActions}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.quickAction, { backgroundColor: SECTION_COLORS.stuff.light }]}
             onPress={() => router.push('/stuff')}
           >
@@ -79,8 +80,18 @@ export default function HomeScreen() {
             <Text style={styles.quickActionLabel}>Borrow</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={[styles.quickAction, { backgroundColor: SECTION_COLORS.stuff.light }]}
+            onPress={() => router.push('/item/add')}
+          >
+            <View style={[styles.quickActionIcon, { backgroundColor: SECTION_COLORS.stuff.primary }]}>
+              <PlusCircle size={24} color={COLORS.white} />
+            </View>
+            <Text style={styles.quickActionLabel}>Share</Text>
+          </TouchableOpacity>
+
           {hasUpcomingDelivery && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.quickAction, { backgroundColor: SECTION_COLORS.food.light }]}
               onPress={() => router.push('/food')}
             >
@@ -91,8 +102,8 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
 
-          {hasActiveVote && (
-            <TouchableOpacity 
+          {hasActiveVote && !hasUpcomingDelivery && (
+            <TouchableOpacity
               style={[styles.quickAction, { backgroundColor: SECTION_COLORS.community.light }]}
               onPress={() => router.push(`/vote/${MOCK_ACTIVE_VOTE.id}`)}
             >
@@ -175,6 +186,7 @@ export default function HomeScreen() {
             avatar="https://i.pravatar.cc/150?img=3"
             text="Marcus sent an announcement"
             time="2 days ago"
+            isLast
           />
         </View>
       </View>
@@ -207,9 +219,9 @@ export default function HomeScreen() {
 }
 
 // Activity Item Component
-function ActivityItem({ avatar, text, time }: { avatar: string; text: string; time: string }) {
+function ActivityItem({ avatar, text, time, isLast }: { avatar: string; text: string; time: string; isLast?: boolean }) {
   return (
-    <View style={styles.activityItem}>
+    <View style={[styles.activityItem, isLast && styles.activityItemLast]}>
       <Image source={{ uri: avatar }} style={styles.activityAvatar} />
       <View style={styles.activityContent}>
         <Text style={styles.activityText}>{text}</Text>
@@ -416,6 +428,9 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+  },
+  activityItemLast: {
+    borderBottomWidth: 0,
   },
   activityAvatar: {
     width: 40,
