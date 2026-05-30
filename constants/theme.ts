@@ -1,123 +1,108 @@
 // Block Share App v2.0 - Theme Constants
-// Simplified UX with distinct section colors for visual cues
+// Design system port from Claude Design prototype
 
 export const COLORS = {
-  // Brand colors
-  primary: '#2E5A4C',
-  secondary: '#4A7C6F',
-  accent: '#D35400',
-  text: '#2C3E50',
-  textLight: '#7F8C8D',
+  // Surfaces
+  background: '#FAF6F0',
+  cream: '#F3EFE6',
+  surface: '#FFFFFF',
+  surface2: '#FBF8F2',
   white: '#FFFFFF',
-  background: '#F5F7FA',
-  border: '#E0E6ED',
-  
-  // Section-specific colors (for visual cue system)
-  home: '#3498DB',      // Blue - Dashboard/Home
-  pools: '#27AE60',     // Green - Sharing Pools (Stuff tab)
-  food: '#E74C3C',      // Red/Warm - Food Collective
-  community: '#9B59B6', // Purple - Community/Governance
-  profile: '#F39C12',   // Orange - Profile/Settings (Me tab)
-  host: '#1ABC9C',      // Teal - Host Functions
-  
-  // Status colors
-  success: '#27AE60',
-  warning: '#F39C12',
-  error: '#E74C3C',
-  info: '#3498DB',
-  
-  // Item availability
-  available: '#27AE60',
-  borrowed: '#F39C12',
-  unavailable: '#95A5A6',
+
+  // Ink
+  text: '#24231F',
+  textSoft: '#6A6760',
+  textLight: '#6A6760',
+  textFaint: '#9A9384',
+
+  // Lines
+  border: '#EEE6D8',
+  borderStrong: '#E2D8C6',
+
+  // Brand
+  primary: '#D35831',
+  primaryDeep: '#B1451F',
+  primaryWash: '#FFF0E2',
+  accent: '#3E6B5C',
+  accentDeep: '#2F5246',
+  accentWash: '#E6EEE9',
+
+  // Section
+  home: '#3E6B5C',
+  stuff: '#D35831',
+  food: '#B23A48',
+  me: '#C77D33',
+  community: '#3D6A8A',
+
+  // Status
+  success: '#3E6B5C',
+  warning: '#C77D33',
+  error: '#B23A48',
+  available: '#3E6B5C',
+  borrowed: '#B1451F',
 };
 
 export const SECTION_COLORS = {
-  home: {
-    primary: COLORS.home,
-    light: '#EBF5FB',
-    dark: '#2980B9',
-  },
-  stuff: {
-    primary: COLORS.pools,
-    light: '#E8F8F5',
-    dark: '#1E8449',
-  },
-  food: {
-    primary: COLORS.food,
-    light: '#FDEDEC',
-    dark: '#C0392B',
-  },
-  me: {
-    primary: COLORS.profile,
-    light: '#FEF5E7',
-    dark: '#D68910',
-  },
-  host: {
-    primary: COLORS.host,
-    light: '#E8F6F3',
-    dark: '#148F77',
-  },
-  community: {
-    primary: COLORS.community,
-    light: '#F5EEF8',
-    dark: '#7D3C98',
-  },
+  home:      { primary: '#3E6B5C', light: '#E6EEE9', dark: '#2F5246' },
+  stuff:     { primary: '#D35831', light: '#FFF0E2', dark: '#B1451F' },
+  food:      { primary: '#B23A48', light: '#FDEAEC', dark: '#8B2D38' },
+  me:        { primary: '#C77D33', light: '#FEF3E7', dark: '#A06425' },
+  host:      { primary: '#3E6B5C', light: '#E6EEE9', dark: '#2F5246' },
+  community: { primary: '#3D6A8A', light: '#E8EFF5', dark: '#2D506A' },
 };
 
 export const SPACING = {
   xs: 4,
   sm: 8,
   md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 48,
+  lg: 20,
+  xl: 24,
+  xxl: 32,
 };
 
 export const FONT_SIZES = {
   xs: 12,
-  sm: 14,
-  md: 16,    // Minimum body text for readability
-  lg: 18,
+  sm: 13,
+  md: 15,
+  lg: 17,
   xl: 22,
-  xxl: 28,
-  hero: 36,
+  xxl: 26,
+  hero: 44,
 };
 
 export const BORDER_RADIUS = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 10,
+  md: 14,
+  lg: 20,
+  xl: 26,
   full: 9999,
 };
 
-// Minimum touch target size for accessibility
 export const TOUCH_TARGET = {
-  min: 48,
+  min: 44,
   preferred: 56,
 };
 
 export const SHADOWS = {
   sm: {
-    shadowColor: '#000',
+    shadowColor: '#28180A',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 1,
   },
   md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowColor: '#28180A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
     elevation: 4,
   },
   lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowColor: '#28180A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
     elevation: 8,
   },
 };
