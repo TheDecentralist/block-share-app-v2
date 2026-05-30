@@ -521,9 +521,15 @@ body.bs-body {
 
   // ── Endpoints ────────────────────────────────────────────────
   // /me is real (blockshare-api v0.1). Refreshes the cached user + notifies.
+  // Does NOT fall back to mock on 401 — auth guard depends on this throwing.
   function me() {
-    return softGet('/me', function () { return MOCKS.me(); }).then(function (u) {
-      _user = u; setSession(null, u); return u;
+    if (FORCE_MOCK) return Promise.resolve(MOCKS.me()).then(function(u) { _user = u; setSession(null, u); return u; });
+    return raw('/me').then(function (r) {
+      if (r.ok && r.data) { _user = r.data; setSession(null, r.data); return r.data; }
+      if (r.status === 401) { clearSession(); throw new Error('Session expired. Please sign in again.'); }
+      // /me not yet reachable — fall back to mock only on network/404
+      if (r.status === 0 || r.status === 404) return MOCKS.me();
+      throw new Error((r.data && r.data.message) || 'Could not load profile.');
     });
   }
   function items(query) {
