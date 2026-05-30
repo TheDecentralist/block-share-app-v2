@@ -1,5 +1,5 @@
 // Block Share App v2.0 - Food Tab
-// Food collective subscriptions and orders
+// Design system port from Claude Design prototype
 
 import React from 'react';
 import {
@@ -8,18 +8,16 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { 
-  Truck, 
-  Gift, 
+import {
   ChevronRight,
-  Heart,
-  Calendar,
+  Leaf,
   Package,
+  Users,
 } from 'lucide-react-native';
-import { COLORS, SECTION_COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
 import { MOCK_FOOD_SUBSCRIPTION } from '@/mocks/data';
 import { BEEF_COLLECTIVE } from '@/types/food';
 
@@ -28,455 +26,326 @@ export default function FoodScreen() {
   const subscription = MOCK_FOOD_SUBSCRIPTION;
   const hasSubscription = subscription && subscription.status === 'active';
   const collective = BEEF_COLLECTIVE;
+  const delivery = subscription.currentDelivery;
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-  };
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {hasSubscription ? (
-        // Active Subscription View
-        <>
-          {/* Next Delivery Card */}
-          <View style={styles.deliveryCard}>
-            <View style={styles.deliveryHeader}>
-              <Truck size={24} color={COLORS.white} />
-              <Text style={styles.deliveryLabel}>Next Delivery</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <Text style={styles.appBarTitle}>Food</Text>
+      </View>
+
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        {hasSubscription ? (
+          <>
+            {/* Active badge + heading */}
+            <View style={styles.activeBadgeRow}>
+              <View style={styles.activeBadge}>
+                <Text style={styles.activeBadgeText}>Active</Text>
+              </View>
+              <Text style={styles.tierLabel}>{subscription.tier}</Text>
             </View>
-            
-            <Text style={styles.deliveryDate}>
-              {subscription.nextDelivery ? formatDate(subscription.nextDelivery) : 'Coming Soon'}
-            </Text>
-            
-            <View style={styles.deliveryMeta}>
-              <View style={styles.deliveryMetaItem}>
-                <Package size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.deliveryMetaText}>
-                  {subscription.tier === 'family' ? '6.5kg' : subscription.tier === 'gathering' ? '10.5kg' : '18kg'}
+            <Text style={styles.collectiveName}>{subscription.collectiveName}</Text>
+
+            {/* Next Delivery Card */}
+            <View style={styles.deliveryCard}>
+              <Text style={styles.deliveryKicker}>NEXT DELIVERY</Text>
+              <View style={styles.deliveryDateChip}>
+                <Text style={styles.deliveryDateText}>
+                  {subscription.nextDelivery ? formatDate(subscription.nextDelivery) : 'Coming Soon'}
                 </Text>
               </View>
-              <View style={styles.deliveryMetaItem}>
-                <Calendar size={16} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.deliveryMetaText}>Every 2 weeks</Text>
-              </View>
-            </View>
-          </View>
 
-          {/* Give or Get Choice */}
-          {subscription.currentDelivery?.giveOrGetChoice === 'pending' && (
-            <TouchableOpacity 
-              style={styles.giveOrGetCard}
-              onPress={() => router.push('/food/give-or-get')}
-            >
-              <Gift size={32} color={SECTION_COLORS.food.primary} />
-              <View style={styles.giveOrGetText}>
-                <Text style={styles.giveOrGetTitle}>Choose Your Freebie! 🎁</Text>
-                <Text style={styles.giveOrGetSubtitle}>Keep it or gift to a neighbor in need</Text>
-              </View>
-              <ChevronRight size={24} color={COLORS.textLight} />
-            </TouchableOpacity>
-          )}
-
-          {/* Box Contents Preview */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>What's in Your Box</Text>
-            <View style={styles.contentsCard}>
-              {subscription.currentDelivery?.contents.map((item, index) => (
-                <View key={index} style={styles.contentItem}>
-                  <Text style={styles.contentEmoji}>🥩</Text>
-                  <Text style={styles.contentText}>{item}</Text>
+              {/* Box contents as pills */}
+              {delivery && (
+                <View style={styles.contentsPills}>
+                  {delivery.contents.map((item, index) => (
+                    <View key={index} style={styles.pill}>
+                      <Text style={styles.pillText}>{item}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
-          </View>
+              )}
 
-          {/* Impact Stats */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Food Impact</Text>
+              {/* Give or Get */}
+              {delivery?.giveOrGetChoice === 'pending' && (
+                <TouchableOpacity
+                  style={styles.giveGetArea}
+                  onPress={() => router.push('/food/give-or-get')}
+                >
+                  <Text style={styles.giveGetPrompt}>Make your Give-or-Get choice</Text>
+                  <ChevronRight size={16} color={COLORS.primary} strokeWidth={2} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Collective Impact */}
+            <Text style={styles.kicker}>COLLECTIVE IMPACT</Text>
             <View style={styles.statsRow}>
-              <View style={styles.statCard}>
+              <View style={styles.statTile}>
+                <Leaf size={16} color={COLORS.food} strokeWidth={1.8} />
                 <Text style={styles.statNumber}>${subscription.totalSaved.toFixed(0)}</Text>
                 <Text style={styles.statLabel}>saved</Text>
               </View>
-              <View style={styles.statCard}>
+              <View style={styles.statTile}>
+                <Package size={16} color={COLORS.food} strokeWidth={1.8} />
                 <Text style={styles.statNumber}>{subscription.totalDeliveries}</Text>
                 <Text style={styles.statLabel}>deliveries</Text>
               </View>
-              <View style={styles.statCard}>
+              <View style={styles.statTile}>
+                <Users size={16} color={COLORS.food} strokeWidth={1.8} />
                 <Text style={styles.statNumber}>{subscription.neighborsHelped}</Text>
-                <Text style={styles.statLabel}>neighbors helped</Text>
+                <Text style={styles.statLabel}>helped</Text>
               </View>
             </View>
-          </View>
 
-          {/* Manage Subscription */}
-          <TouchableOpacity style={styles.manageButton}>
-            <Text style={styles.manageButtonText}>Manage Subscription</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        // Join Collective View
-        <>
-          {/* Hero Card */}
-          <View style={styles.heroCard}>
-            <Text style={styles.heroEmoji}>🥩</Text>
+            {/* Manage */}
+            <TouchableOpacity style={styles.manageButton}>
+              <Text style={styles.manageButtonText}>Manage Subscription</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            {/* Photo placeholder */}
+            <View style={styles.heroPhoto}>
+              <Text style={styles.heroEmoji}>🥩</Text>
+            </View>
+
             <Text style={styles.heroTitle}>{collective.name}</Text>
             <Text style={styles.heroTagline}>{collective.tagline}</Text>
-            <Text style={styles.heroPrice}>Every cut, one price: $14/kg</Text>
-          </View>
 
-          {/* Philosophy */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>What We Believe</Text>
-            <View style={styles.philosophyList}>
-              {collective.philosophy.slice(0, 4).map((item, index) => (
-                <View key={index} style={styles.philosophyItem}>
-                  <Heart size={16} color={SECTION_COLORS.food.primary} fill={SECTION_COLORS.food.primary} />
-                  <Text style={styles.philosophyText}>{item.title}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
+            <TouchableOpacity
+              style={styles.joinButton}
+              onPress={() => router.push('/food/subscribe')}
+            >
+              <Text style={styles.joinButtonText}>Join the collective</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
-          {/* Four Pillars */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Four Pillars</Text>
-            <View style={styles.pillarsGrid}>
-              {collective.pillars.map((pillar, index) => (
-                <View key={index} style={styles.pillarCard}>
-                  <Text style={styles.pillarIcon}>{pillar.icon}</Text>
-                  <Text style={styles.pillarTitle}>{pillar.title}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          {/* Subscription Tiers */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Choose Your Plan</Text>
-            {collective.subscriptionTiers.map((tier) => (
-              <TouchableOpacity 
-                key={tier.id} 
-                style={styles.tierCard}
-                onPress={() => router.push('/food/subscribe')}
-              >
-                <View style={styles.tierHeader}>
-                  <Text style={styles.tierName}>{tier.name}</Text>
-                  <View style={styles.tierPriceContainer}>
-                    <Text style={styles.tierPrice}>${tier.price}</Text>
-                    <Text style={styles.tierPricePer}>/month</Text>
-                  </View>
-                </View>
-                <View style={styles.tierDetails}>
-                  <Text style={styles.tierDetail}>📦 {tier.weight}</Text>
-                  <Text style={styles.tierDetail}>👨‍👩‍👧 {tier.servings}</Text>
-                  <Text style={[styles.tierDetail, styles.tierSavings]}>💰 Save {tier.savings}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* CTA */}
-          <TouchableOpacity 
-            style={styles.joinButton}
-            onPress={() => router.push('/food/subscribe')}
-          >
-            <Text style={styles.joinButtonText}>Join the Collective</Text>
-          </TouchableOpacity>
-        </>
-      )}
-
-      <View style={styles.bottomSpacer} />
-    </ScrollView>
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
-
-  // Delivery Card (Active Subscription)
-  deliveryCard: {
-    backgroundColor: SECTION_COLORS.food.primary,
-    margin: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    ...SHADOWS.md,
-  },
-  deliveryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  deliveryLabel: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-  },
-  deliveryDate: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    marginBottom: SPACING.md,
-  },
-  deliveryMeta: {
-    flexDirection: 'row',
-    gap: SPACING.lg,
-  },
-  deliveryMetaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  deliveryMetaText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: FONT_SIZES.sm,
-  },
-
-  // Give or Get Card
-  giveOrGetCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    marginHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
-    padding: SPACING.lg,
-    borderRadius: BORDER_RADIUS.lg,
-    gap: SPACING.md,
-    borderWidth: 2,
-    borderColor: SECTION_COLORS.food.light,
-    ...SHADOWS.sm,
-  },
-  giveOrGetText: {
+  container: {
     flex: 1,
   },
-  giveOrGetTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  giveOrGetSubtitle: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-    marginTop: 2,
+  content: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xxl,
   },
 
-  // Section
-  section: {
-    paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.lg,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-  },
-
-  // Contents Card
-  contentsCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    ...SHADOWS.sm,
-  },
-  contentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.sm,
+  // App Bar
+  appBar: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  contentEmoji: {
-    fontSize: 20,
+  appBarTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.food,
+    letterSpacing: -0.3,
   },
-  contentText: {
-    fontSize: FONT_SIZES.md,
+
+  // Active subscription heading
+  activeBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  activeBadge: {
+    backgroundColor: '#FDEAEC',
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 3,
+  },
+  activeBadgeText: {
+    fontSize: FONT_SIZES.xs,
+    fontWeight: '600',
+    color: COLORS.food,
+  },
+  tierLabel: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSoft,
+    textTransform: 'capitalize',
+  },
+  collectiveName: {
+    fontSize: FONT_SIZES.xxl,
+    fontFamily: 'Georgia',
+    fontWeight: '700',
     color: COLORS.text,
+    letterSpacing: -0.5,
+    marginBottom: SPACING.lg,
+  },
+
+  // Delivery Card
+  deliveryCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.sm,
+  },
+  deliveryKicker: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textFaint,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: SPACING.sm,
+  },
+  deliveryDateChip: {
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 5,
+    marginBottom: SPACING.md,
+  },
+  deliveryDateText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  contentsPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.xs,
+    marginBottom: SPACING.md,
+  },
+  pill: {
+    backgroundColor: COLORS.surface2,
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  pillText: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textSoft,
+  },
+  giveGetArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primaryWash,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+  },
+  giveGetPrompt: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
 
   // Stats
+  kicker: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textFaint,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: SPACING.sm,
+  },
   statsRow: {
     flexDirection: 'row',
-    gap: SPACING.md,
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
-  statCard: {
+  statTile: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
     alignItems: 'center',
-    ...SHADOWS.sm,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   statNumber: {
     fontSize: FONT_SIZES.xl,
+    fontFamily: 'Georgia',
     fontWeight: '700',
-    color: SECTION_COLORS.food.primary,
+    color: COLORS.text,
+    letterSpacing: -0.5,
   },
   statLabel: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-    marginTop: 2,
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textFaint,
   },
 
-  // Manage Button
+  // Manage
   manageButton: {
-    marginHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 2,
-    borderColor: SECTION_COLORS.food.primary,
+    borderWidth: 1.5,
+    borderColor: COLORS.food,
     alignItems: 'center',
   },
   manageButtonText: {
-    color: SECTION_COLORS.food.primary,
     fontSize: FONT_SIZES.md,
-    fontWeight: '700',
+    fontWeight: '600',
+    color: COLORS.food,
   },
 
-  // Hero Card (Join View)
-  heroCard: {
-    backgroundColor: SECTION_COLORS.food.primary,
-    margin: SPACING.md,
+  // Not subscribed
+  heroPhoto: {
+    height: 200,
+    backgroundColor: COLORS.cream,
     borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.xl,
     alignItems: 'center',
-    ...SHADOWS.md,
+    justifyContent: 'center',
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   heroEmoji: {
-    fontSize: 64,
-    marginBottom: SPACING.md,
+    fontSize: 72,
   },
   heroTitle: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.xl,
+    fontSize: FONT_SIZES.xxl,
+    fontFamily: 'Georgia',
     fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: SPACING.xs,
-  },
-  heroTagline: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: FONT_SIZES.md,
-    textAlign: 'center',
-    marginBottom: SPACING.md,
-  },
-  heroPrice: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '700',
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-  },
-
-  // Philosophy
-  philosophyList: {
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    ...SHADOWS.sm,
-  },
-  philosophyItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.sm,
-  },
-  philosophyText: {
-    fontSize: FONT_SIZES.md,
     color: COLORS.text,
-    flex: 1,
-  },
-
-  // Pillars Grid
-  pillarsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  pillarCard: {
-    width: '48%',
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    alignItems: 'center',
-    ...SHADOWS.sm,
-  },
-  pillarIcon: {
-    fontSize: 32,
-    marginBottom: SPACING.xs,
-  },
-  pillarTitle: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-
-  // Tier Cards
-  tierCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.md,
-    ...SHADOWS.sm,
-  },
-  tierHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    letterSpacing: -0.5,
     marginBottom: SPACING.sm,
   },
-  tierName: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '700',
-    color: COLORS.text,
+  heroTagline: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSoft,
+    lineHeight: 22,
+    marginBottom: SPACING.xl,
   },
-  tierPriceContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  tierPrice: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: SECTION_COLORS.food.primary,
-  },
-  tierPricePer: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-  },
-  tierDetails: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-  },
-  tierDetail: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-  },
-  tierSavings: {
-    color: COLORS.success,
-    fontWeight: '600',
-  },
-
-  // Join Button
   joinButton: {
-    backgroundColor: SECTION_COLORS.food.primary,
-    marginHorizontal: SPACING.md,
-    paddingVertical: SPACING.lg,
+    backgroundColor: COLORS.primary,
     borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
     ...SHADOWS.md,
   },
   joinButtonText: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.lg,
+    fontSize: FONT_SIZES.md,
     fontWeight: '700',
+    color: COLORS.white,
   },
 
   bottomSpacer: {

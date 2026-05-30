@@ -1,5 +1,5 @@
-// Block Share App v2.0 - Stuff Tab (Pools)
-// Browse, borrow, and share items with simplified category grid
+// Block Share App v2.0 - Stuff Tab
+// Design system port from Claude Design prototype
 
 import React, { useState, useMemo } from 'react';
 import {
@@ -9,335 +9,330 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Image,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { 
-  Search, 
-  Plus, 
-  MapPin, 
-  Star,
-  ChevronLeft,
-  Filter,
-} from 'lucide-react-native';
-import { COLORS, SECTION_COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS, TOUCH_TARGET } from '@/constants/theme';
-import { CATEGORIES, POOL_TYPES } from '@/constants/categories';
+import { Search, Plus, Star } from 'lucide-react-native';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '@/constants/theme';
+import { CATEGORIES } from '@/constants/categories';
 import { MOCK_ITEMS } from '@/mocks/data';
 import { Item, ItemCategory } from '@/types/item';
 
-type ViewMode = 'categories' | 'items';
-type PoolScope = 'building' | 'block' | 'nearby';
-
 export default function StuffScreen() {
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<ViewMode>('categories');
-  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | null>(null);
-  const [poolScope, setPoolScope] = useState<PoolScope>('building');
+  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Categories that have items in the mock data
+  const categoriesWithItems = useMemo(() => {
+    const cats = new Set(MOCK_ITEMS.map(i => i.category));
+    return CATEGORIES.filter(c => cats.has(c.id) && c.id !== 'wanted');
+  }, []);
 
   const filteredItems = useMemo(() => {
     let items = MOCK_ITEMS;
-    
-    if (selectedCategory) {
+    if (selectedCategory !== 'all') {
       items = items.filter(item => item.category === selectedCategory);
     }
-    
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      items = items.filter(item => 
-        item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query)
+      const q = searchQuery.toLowerCase();
+      items = items.filter(item =>
+        item.title.toLowerCase().includes(q) || item.description.toLowerCase().includes(q)
       );
     }
-    
-    if (poolScope === 'building') {
-      items = items.filter(item => item.poolType === 'building');
-    } else if (poolScope === 'block') {
-      items = items.filter(item => item.poolType === 'building' || item.poolType === 'block');
-    }
-    
     return items;
-  }, [selectedCategory, poolScope, searchQuery]);
-
-  const handleCategoryPress = (categoryId: ItemCategory) => {
-    setSelectedCategory(categoryId);
-    setViewMode('items');
-  };
-
-  const handleBackToCategories = () => {
-    setSelectedCategory(null);
-    setViewMode('categories');
-    setSearchQuery('');
-  };
-
-  const getCategoryInfo = (id: ItemCategory) => CATEGORIES.find(c => c.id === id);
+  }, [selectedCategory, searchQuery]);
 
   return (
-    <View style={styles.container}>
-      {/* Pool Scope Selector */}
-      <View style={styles.scopeSelector}>
-        {POOL_TYPES.map((pool) => (
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <Text style={styles.appBarTitle}>Stuff</Text>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/item/add')}>
+          <Plus size={22} color={COLORS.text} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Search */}
+      <View style={styles.searchWrapper}>
+        <View style={styles.searchBar}>
+          <Search size={16} color={COLORS.textFaint} strokeWidth={1.8} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search items..."
+            placeholderTextColor={COLORS.textFaint}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      </View>
+
+      {/* Category Chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.chipsScroll}
+        contentContainerStyle={styles.chipsContent}
+      >
+        <TouchableOpacity
+          style={[styles.chip, selectedCategory === 'all' && styles.chipActive]}
+          onPress={() => setSelectedCategory('all')}
+        >
+          <Text style={[styles.chipText, selectedCategory === 'all' && styles.chipTextActive]}>All</Text>
+        </TouchableOpacity>
+        {categoriesWithItems.map(cat => (
           <TouchableOpacity
-            key={pool.id}
-            style={[styles.scopeButton, poolScope === pool.id && styles.scopeButtonActive]}
-            onPress={() => setPoolScope(pool.id as PoolScope)}
+            key={cat.id}
+            style={[styles.chip, selectedCategory === cat.id && styles.chipActive]}
+            onPress={() => setSelectedCategory(cat.id)}
           >
-            <Text style={[styles.scopeButtonText, poolScope === pool.id && styles.scopeButtonTextActive]}>
-              {pool.name}
+            <Text style={[styles.chipText, selectedCategory === cat.id && styles.chipTextActive]}>
+              {cat.emoji} {cat.name}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
-      {viewMode === 'categories' ? (
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.searchContainer}>
-            <Search size={20} color={COLORS.textLight} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search items..."
-              placeholderTextColor={COLORS.textLight}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={() => searchQuery && setViewMode('items')}
-            />
+      {/* Item Grid */}
+      <FlatList
+        data={filteredItems}
+        keyExtractor={item => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.columnWrapper}
+        contentContainerStyle={styles.gridContent}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <ItemCard item={item} onPress={() => router.push(`/item/${item.id}`)} />
+        )}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>📦</Text>
+            <Text style={styles.emptyText}>No items found</Text>
+            <Text style={styles.emptySub}>Be the first to share something!</Text>
           </View>
-
-          <View style={styles.categoryGrid}>
-            {CATEGORIES.filter(c => c.id !== 'wanted').map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryCard}
-                onPress={() => handleCategoryPress(category.id)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.categoryEmoji}>{category.emoji}</Text>
-                <Text style={styles.categoryName}>{category.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <TouchableOpacity style={styles.wantedCard} onPress={() => handleCategoryPress('wanted')}>
-            <Text style={styles.wantedEmoji}>🔍</Text>
-            <View style={styles.wantedText}>
-              <Text style={styles.wantedTitle}>Looking for Something?</Text>
-              <Text style={styles.wantedSubtitle}>See what neighbors need</Text>
-            </View>
-          </TouchableOpacity>
-        </ScrollView>
-      ) : (
-        <View style={styles.itemsContainer}>
-          <View style={styles.itemsHeader}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBackToCategories}>
-              <ChevronLeft size={24} color={COLORS.text} />
-            </TouchableOpacity>
-            <View style={styles.itemsHeaderText}>
-              {selectedCategory && (
-                <>
-                  <Text style={styles.itemsHeaderEmoji}>{getCategoryInfo(selectedCategory)?.emoji}</Text>
-                  <Text style={styles.itemsHeaderTitle}>{getCategoryInfo(selectedCategory)?.name}</Text>
-                </>
-              )}
-              {!selectedCategory && searchQuery && (
-                <Text style={styles.itemsHeaderTitle}>Search: "{searchQuery}"</Text>
-              )}
-            </View>
-            <TouchableOpacity style={styles.filterButton}>
-              <Filter size={20} color={COLORS.textLight} />
-            </TouchableOpacity>
-          </View>
-
-          <FlatList
-            data={filteredItems}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <ItemCard item={item} onPress={() => router.push(`/item/${item.id}`)} />}
-            contentContainerStyle={styles.itemsList}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateEmoji}>📦</Text>
-                <Text style={styles.emptyStateText}>No items found</Text>
-                <Text style={styles.emptyStateSubtext}>Be the first to share something!</Text>
-              </View>
-            }
-          />
-        </View>
-      )}
-
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/item/add')}>
-        <Plus size={28} color={COLORS.white} strokeWidth={2.5} />
-      </TouchableOpacity>
-    </View>
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 function ItemCard({ item, onPress }: { item: Item; onPress: () => void }) {
+  const category = CATEGORIES.find(c => c.id === item.category);
   const isAvailable = item.status === 'available';
-  
+
   return (
-    <TouchableOpacity style={styles.itemCard} onPress={onPress} activeOpacity={0.7}>
-      <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
-      
-      <View style={styles.itemContent}>
-        <View style={styles.itemHeader}>
-          <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: isAvailable ? COLORS.available : COLORS.borrowed }]}>
-            <Text style={styles.statusText}>{isAvailable ? 'Available' : 'Borrowed'}</Text>
-          </View>
-        </View>
-
-        <View style={styles.itemMeta}>
-          <View style={styles.itemMetaRow}>
-            <MapPin size={14} color={COLORS.textLight} />
-            <Text style={styles.itemMetaText}>
-              {item.distance ? `${Math.round(item.distance * 10)} min walk` : item.location}
-            </Text>
-          </View>
-          {item.rating && (
-            <View style={styles.itemMetaRow}>
-              <Star size={14} color={COLORS.warning} fill={COLORS.warning} />
-              <Text style={styles.itemMetaText}>{item.rating.average.toFixed(1)} ({item.rating.count})</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.itemOwner}>
-          {item.ownerAvatar && <Image source={{ uri: item.ownerAvatar }} style={styles.ownerAvatar} />}
-          <Text style={styles.ownerName}>{item.ownerName}</Text>
+    <TouchableOpacity style={styles.itemCard} onPress={onPress} activeOpacity={0.8}>
+      {/* Photo placeholder */}
+      <View style={styles.photoPlaceholder}>
+        {/* Striped pattern via diagonal lines illusion with background */}
+        <View style={styles.stripedBg} />
+        {/* Emoji + status badge */}
+        <View style={styles.badgeRow}>
+          <Text style={styles.categoryEmoji}>{category?.emoji ?? '📦'}</Text>
+          <View style={[styles.statusDot, { backgroundColor: isAvailable ? COLORS.available : COLORS.borrowed }]} />
         </View>
       </View>
 
-      {isAvailable && (
-        <TouchableOpacity style={styles.borrowButton}>
-          <Text style={styles.borrowButtonText}>Borrow</Text>
-        </TouchableOpacity>
-      )}
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
+        <View style={styles.itemMeta}>
+          <Text style={styles.ownerName}>{item.ownerName}</Text>
+          {item.rating && (
+            <View style={styles.ratingRow}>
+              <Star size={11} color={COLORS.warning} fill={COLORS.warning} />
+              <Text style={styles.ratingText}>{item.rating.average.toFixed(1)}</Text>
+            </View>
+          )}
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scrollView: { flex: 1 },
-  scopeSelector: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  // App Bar
+  appBar: {
     flexDirection: 'row',
-    backgroundColor: COLORS.white,
-    padding: SPACING.sm,
-    gap: SPACING.xs,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  scopeButton: {
-    flex: 1,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    alignItems: 'center',
+  appBarTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.stuff,
+    letterSpacing: -0.3,
   },
-  scopeButtonActive: { backgroundColor: SECTION_COLORS.stuff.primary },
-  scopeButtonText: { fontSize: FONT_SIZES.sm, fontWeight: '600', color: COLORS.textLight },
-  scopeButtonTextActive: { color: COLORS.white },
-  searchContainer: {
+  iconButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Search
+  searchWrapper: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.surface,
+  },
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    margin: SPACING.md,
+    backgroundColor: COLORS.surface2,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
-    ...SHADOWS.sm,
+    gap: SPACING.sm,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.sm,
+    paddingVertical: 11,
     fontSize: FONT_SIZES.md,
     color: COLORS.text,
   },
-  categoryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: SPACING.sm,
-    gap: SPACING.sm,
-  },
-  categoryCard: {
-    width: '31%',
-    aspectRatio: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOWS.sm,
-  },
-  categoryEmoji: { fontSize: 36, marginBottom: SPACING.xs },
-  categoryName: { fontSize: FONT_SIZES.sm, fontWeight: '600', color: COLORS.text, textAlign: 'center' },
-  wantedCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    margin: SPACING.md,
-    marginTop: SPACING.sm,
-    padding: SPACING.lg,
-    borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 2,
-    borderColor: SECTION_COLORS.stuff.light,
-    borderStyle: 'dashed',
-  },
-  wantedEmoji: { fontSize: 32, marginRight: SPACING.md },
-  wantedText: { flex: 1 },
-  wantedTitle: { fontSize: FONT_SIZES.md, fontWeight: '700', color: COLORS.text },
-  wantedSubtitle: { fontSize: FONT_SIZES.sm, color: COLORS.textLight, marginTop: 2 },
-  itemsContainer: { flex: 1 },
-  itemsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
+
+  // Chips
+  chipsScroll: {
+    flexGrow: 0,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  backButton: { width: TOUCH_TARGET.min, height: TOUCH_TARGET.min, alignItems: 'center', justifyContent: 'center' },
-  itemsHeaderText: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-  itemsHeaderEmoji: { fontSize: 24 },
-  itemsHeaderTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.text },
-  filterButton: { width: TOUCH_TARGET.min, height: TOUCH_TARGET.min, alignItems: 'center', justifyContent: 'center' },
-  itemsList: { padding: SPACING.md, paddingBottom: 100 },
+  chipsContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    gap: SPACING.sm,
+    flexDirection: 'row',
+  },
+  chip: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 7,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chipActive: {
+    backgroundColor: COLORS.text,
+    borderColor: COLORS.text,
+  },
+  chipText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  chipTextActive: {
+    color: COLORS.white,
+  },
+
+  // Grid
+  columnWrapper: {
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.sm,
+  },
+  gridContent: {
+    paddingTop: SPACING.md,
+    paddingBottom: 100,
+    gap: SPACING.sm,
+  },
+
+  // Item Card
   itemCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    marginBottom: SPACING.md,
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border,
     ...SHADOWS.sm,
   },
-  itemImage: { width: '100%', height: 180, backgroundColor: COLORS.border },
-  itemContent: { padding: SPACING.md },
-  itemHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.sm },
-  itemTitle: { flex: 1, fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.text, marginRight: SPACING.sm },
-  statusBadge: { paddingHorizontal: SPACING.sm, paddingVertical: SPACING.xs, borderRadius: BORDER_RADIUS.sm },
-  statusText: { fontSize: FONT_SIZES.xs, fontWeight: '600', color: COLORS.white },
-  itemMeta: { flexDirection: 'row', gap: SPACING.lg, marginBottom: SPACING.sm },
-  itemMetaRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
-  itemMetaText: { fontSize: FONT_SIZES.sm, color: COLORS.textLight },
-  itemOwner: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-  ownerAvatar: { width: 24, height: 24, borderRadius: BORDER_RADIUS.full },
-  ownerName: { fontSize: FONT_SIZES.sm, color: COLORS.textLight },
-  borrowButton: { backgroundColor: SECTION_COLORS.stuff.primary, paddingVertical: SPACING.md, alignItems: 'center' },
-  borrowButtonText: { color: COLORS.white, fontSize: FONT_SIZES.md, fontWeight: '700' },
-  emptyState: { alignItems: 'center', padding: SPACING.xxl },
-  emptyStateEmoji: { fontSize: 64, marginBottom: SPACING.md },
-  emptyStateText: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.xs },
-  emptyStateSubtext: { fontSize: FONT_SIZES.md, color: COLORS.textLight },
-  fab: {
+  photoPlaceholder: {
+    height: 130,
+    backgroundColor: COLORS.cream,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  stripedBg: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.cream,
+    opacity: 0.5,
+  },
+  badgeRow: {
     position: 'absolute',
-    bottom: SPACING.lg,
-    right: SPACING.lg,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: SECTION_COLORS.stuff.primary,
+    top: SPACING.sm,
+    left: SPACING.sm,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOWS.lg,
+    gap: SPACING.xs,
+  },
+  categoryEmoji: {
+    fontSize: 22,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: COLORS.surface,
+  },
+  itemInfo: {
+    padding: SPACING.sm,
+  },
+  itemTitle: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  itemMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ownerName: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textFaint,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  ratingText: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textSoft,
+    fontWeight: '500',
+  },
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xxl * 2,
+  },
+  emptyEmoji: {
+    fontSize: 48,
+    marginBottom: SPACING.md,
+  },
+  emptyText: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  emptySub: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textFaint,
   },
 });
