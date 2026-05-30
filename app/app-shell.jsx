@@ -87,8 +87,9 @@ function renderScreen(route, user) {
     case 'home':  return h(HomeScreen,  { user, navigate });
     case 'stuff': return h(StuffScreen, { navigate });
     case 'food':  return h(FoodScreen,  { navigate });
-    case 'me':    return h(MeScreen,    { user, navigate });
-    case 'item':  return h(ItemDetailScreen, { id: route.params.id, navigate });
+    case 'me':      return h(MeScreen,      { user, navigate });
+    case 'credits': return h(CreditsScreen, { user, navigate });
+    case 'item':    return h(ItemDetailScreen, { id: route.params.id, navigate });
 
     // Sub-flows — designed, awaiting their endpoints. Resolve to a real stub.
     case 'vote':  return h(StubScreen, { title: 'Ranked-choice vote', body: 'Cast and rank your choices here. Wires to GET/POST /votes/:id.', navigate });

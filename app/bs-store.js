@@ -167,6 +167,13 @@
   function residents() {
     return softGet('/host/residents', function () { return MOCKS.residents(); });
   }
+  function wallet(uid) {
+    return raw('/wallet/' + uid).then(function(r) {
+      if (r.ok && r.data) return r.data;
+      return { spendable: 0, locked: 0, invested: 0, pledged: 0, total: 0, transactions: [] };
+    });
+  }
+
   function signOut() {
     raw('/auth/sign-out', { method: 'POST' });
     clearSession();
@@ -187,7 +194,7 @@
     // endpoints
     me: me, items: items, item: item, borrow: borrow,
     foodSubscription: foodSubscription, activeVote: activeVote,
-    broadcasts: broadcasts, residents: residents,
+    broadcasts: broadcasts, residents: residents, wallet: wallet,
   };
 
   /* =========================================================================
