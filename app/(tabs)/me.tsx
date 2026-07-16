@@ -62,13 +62,13 @@ export default function MeScreen() {
       </View>
 
       {/* Credits Card */}
-      <TouchableOpacity style={styles.creditsCard}>
+      <TouchableOpacity style={styles.creditsCard} onPress={() => router.push('/me/referral')}>
         <View style={styles.creditsHeader}>
           <CreditCard size={20} color={SECTION_COLORS.me.primary} />
           <Text style={styles.creditsLabel}>Your Credits</Text>
         </View>
-        <Text style={styles.creditsAmount}>${user.creditBalance.toFixed(2)}</Text>
-        <Text style={styles.creditsHelp}>Tap to see how to earn more →</Text>
+        <Text style={styles.creditsAmount}>{user.creditBalance.toFixed(2)} CC</Text>
+        <Text style={styles.creditsHelp}>Invite neighbours → earn Community Credits →</Text>
       </TouchableOpacity>
 
       {/* My Contributions */}

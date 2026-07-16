@@ -6,6 +6,7 @@ import { Item, Pool } from '@/types/item';
 import { FoodSubscription } from '@/types/food';
 import { Vote } from '@/types/vote';
 import { BroadcastMessage, Chat } from '@/types/chat';
+import { CommunityProject, ReferralCode } from '@/types/referral';
 
 // Current user (mock)
 export const MOCK_CURRENT_USER: User = {
@@ -288,6 +289,53 @@ export const MOCK_BUILDING_MEMBERS = [
   { id: 'user-4', name: 'James Kim', unit: '108', avatar: 'https://i.pravatar.cc/150?img=6', lastActive: new Date('2025-01-30'), itemsShared: 1 },
   { id: 'user-5', name: 'Emma Wilson', unit: '503', avatar: 'https://i.pravatar.cc/150?img=9', lastActive: new Date('2025-01-25'), itemsShared: 2 },
 ];
+
+// Save the Pond community project
+export const SAVE_THE_POND_PROJECT: CommunityProject = {
+  id: 'save-the-pond',
+  name: 'Save the Pond',
+  tagline: 'Restore Trout Lake for our neighbourhood',
+  description: 'Join neighbours working to restore Trout Lake\'s ecosystem through clean-ups, native planting, and advocacy. Every new member who completes onboarding helps fund the cause.',
+  ccReward: 20,
+};
+
+// Mock referral code for current user
+export const MOCK_REFERRAL_CODE: ReferralCode = {
+  code: 'VAN-B1-SARAH03',
+  webUrl: 'https://app.blockshare.ca/join?ref=VAN-B1-SARAH03&project=save-the-pond',
+  project: SAVE_THE_POND_PROJECT,
+  stats: {
+    totalReferrals: 3,
+    pendingReferrals: 1,
+    creditedReferrals: 2,
+    totalCCEarned: 40,
+  },
+  referrals: [
+    {
+      id: 'ref-1',
+      referredName: 'Mike',
+      status: 'credited',
+      ccAmount: 20,
+      createdAt: new Date('2024-12-15'),
+      creditedAt: new Date('2024-12-15'),
+    },
+    {
+      id: 'ref-2',
+      referredName: 'Priya',
+      status: 'credited',
+      ccAmount: 20,
+      createdAt: new Date('2025-01-08'),
+      creditedAt: new Date('2025-01-09'),
+    },
+    {
+      id: 'ref-3',
+      referredName: 'Tom',
+      status: 'pending',
+      ccAmount: 20,
+      createdAt: new Date('2025-01-28'),
+    },
+  ],
+};
 
 // Mock broadcast messages
 export const MOCK_BROADCASTS: BroadcastMessage[] = [

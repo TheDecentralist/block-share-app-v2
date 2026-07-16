@@ -102,11 +102,17 @@ export default function RootLayout() {
             presentation: 'modal',
           }} 
         />
-        <Stack.Screen 
-          name="chat/[id]" 
-          options={{ 
+        <Stack.Screen
+          name="chat/[id]"
+          options={{
             title: 'Chat',
-          }} 
+          }}
+        />
+        <Stack.Screen
+          name="me/referral"
+          options={{
+            title: 'Invite & Earn',
+          }}
         />
       </Stack>
     </>
