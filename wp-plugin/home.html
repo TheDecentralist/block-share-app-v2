@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Home</title>
+  <link rel="manifest" href="/bs-manifest.json">
+  <meta name="theme-color" content="#2E7D32">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f4f6f4; color: #1a1a1a; min-height: 100vh; }
+
+    .header { background: #2E7D32; color: #fff; padding: 20px 16px 24px; }
+    .header .greeting { font-size: 22px; font-weight: 700; }
+    .header .block-id { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+    .cc-strip { display: flex; gap: 10px; padding: 16px; margin-top: -12px; }
+    .cc-tile { flex: 1; background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .cc-tile .value { font-size: 26px; font-weight: 800; color: #2E7D32; }
+    .cc-tile .label { font-size: 11px; color: #666; margin-top: 3px; text-transform: uppercase; letter-spacing: .4px; }
+    .cc-tile.locked .value { color: #e67e22; }
+    .cc-tile.today .value { color: #1565C0; }
+
+    .section { padding: 0 16px 16px; }
+    .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #555; margin-bottom: 10px; }
+    .sub-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+
+    .project-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .project-card .name { font-size: 17px; font-weight: 700; }
+    .project-card .tagline { font-size: 13px; color: #555; margin-top: 3px; }
+    .progress-bar { background: #e0e0e0; border-radius: 99px; height: 8px; margin: 12px 0 6px; }
+    .progress-fill { background: #2E7D32; height: 8px; border-radius: 99px; transition: width .4s ease; }
+    .project-meta { display: flex; justify-content: space-between; font-size: 12px; color: #777; }
+    .quest-badge { display: inline-block; border-radius: 99px; padding: 3px 10px; font-size: 12px; font-weight: 600; margin-top: 10px; }
+    .quest-done { background: #e8f5e9; color: #2E7D32; }
+    .quest-progress { background: #fff3e0; color: #e65100; }
+
+    .pulse-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.1); display: flex; align-items: center; gap: 14px; }
+    .pulse-dot { width: 10px; height: 10px; background: #4CAF50; border-radius: 50%; animation: blink 1.6s infinite; flex-shrink: 0; }
+    @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+    .pulse-text { font-size: 15px; }
+    .pulse-text strong { color: #2E7D32; }
+
+    .item-card { background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+    .item-emoji { font-size: 28px; flex-shrink: 0; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-title { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-desc { font-size: 12px; color: #777; margin-top: 2px; }
+    .item-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 600; flex-shrink: 0; }
+    .badge-available { background: #e8f5e9; color: #2E7D32; }
+    .badge-borrowed { background: #fff3e0; color: #e65100; }
+    .empty-card { background: #fff; border-radius: 10px; padding: 16px; text-align: center; color: #999; font-size: 13px; }
+
+    .install-card { background: #E8F5E9; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 24px; }
+    .install-card p { font-size: 13px; color: #444; margin-bottom: 10px; }
+    .btn { border: none; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
+    .btn-green { background: #2E7D32; color: #fff; }
+    .btn-outline { background: #fff; color: #2E7D32; border: 2px solid #2E7D32; margin-top: 8px; }
+
+    .loading { text-align: center; padding: 60px 20px; color: #888; }
+    .error-msg { background: #ffebee; color: #c62828; padding: 14px 16px; border-radius: 8px; margin: 16px; font-size: 14px; }
+  </style>
+</head>
+<body>
+<div id="app"><div class="loading">Loading your block...</div></div>
+<script>
+(function () {
+  var HOME_API  = '/wp-json/blockshare/v1/home';
+  var ITEMS_API = '/wp-json/blockshare/v1/items';
+  var params = new URLSearchParams(location.search);
+  var token = params.get('token') || sessionStorage.getItem('bs_token');
+  var uid   = params.get('uid')   || sessionStorage.getItem('bs_uid');
+  if (token) sessionStorage.setItem('bs_token', token);
+  if (uid)   sessionStorage.setItem('bs_uid', uid);
+
+  function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  var EMOJI = {tools:'&#x1F527;',camping:'&#x26FA;',kitchen:'&#x1F373;',bikes:'&#x1F6B2;',
+               vehicles:'&#x1F697;',sports:'&#x26BD;',garden:'&#x1F331;',furniture:'&#x1F6CB;',
+               party:'&#x1F389;',medical:'&#x1F3E5;',watercraft:'&#x1F6A4;',patio:'&#x2600;'};
+
+  function catEmoji(c) { return EMOJI[c] || '&#x1F4E6;'; }
+
+  function itemCard(item, showBadge) {
+    var badge = showBadge
+      ? '<span class="item-badge ' + (item.status === 'available' ? 'badge-available' : 'badge-borrowed') + '">' + esc(item.status) + '</span>'
+      : '';
+    var desc = (item.description || '').slice(0, 52);
+    if ((item.description || '').length > 52) desc += '…';
+    return '<div class="item-card">' +
+      '<div class="item-emoji">' + catEmoji(item.category) + '</div>' +
+      '<div class="item-info"><div class="item-title">' + esc(item.title) + '</div>' +
+      '<div class="item-desc">' + esc(desc) + '</div></div>' +
+      badge + '</div>';
+  }
+
+  function render(home, items) {
+    var u = home.user;
+    var proj = (home.projects || [])[0] || null;
+    var pulse = home.block_pulse || {};
+    var nearby = (items && items.nearby) || [];
+    var mine   = (items && items.mine)   || [];
+    var pct = proj ? Math.round((proj.your_q_done / 5) * 100) : 0;
+
+    var h = '';
+
+    // Header
+    h += '<div class="header"><div class="greeting">Hi ' + esc(u.first_name) + '!</div>' +
+         '<div class="block-id">Block ' + esc(u.block_number) + ' &middot; ' + esc(u.neighbourhood) + '</div></div>';
+
+    // CC Strip
+    h += '<div class="cc-strip">' +
+      '<div class="cc-tile"><div class="value">' + u.cc_spendable + '</div><div class="label">Spendable</div></div>' +
+      '<div class="cc-tile locked"><div class="value">' + u.cc_locked + '</div><div class="label">Locked</div></div>' +
+      '<div class="cc-tile today"><div class="value">+' + u.cc_earned_today + '</div><div class="label">Today</div></div>' +
+      '</div>';
+
+    // Sharing Economy
+    h += '<div class="section"><div class="section-title">Sharing Economy</div>';
+    h += '<div class="sub-title">Available Near You</div>';
+    if (nearby.length) {
+      nearby.forEach(function(item) { h += itemCard(item, false); });
+    } else {
+      h += '<div class="empty-card">No items nearby yet &mdash; invite neighbours to join!</div>';
+    }
+    h += '<div style="height:12px"></div>';
+    h += '<div class="sub-title">You\'re Sharing</div>';
+    if (mine.length) {
+      mine.forEach(function(item) { h += itemCard(item, true); });
+    } else {
+      h += '<div class="empty-card">Share your first item with your block!</div>';
+    }
+    h += '<button class="btn btn-green" style="margin-top:12px">+ Share an Item</button>';
+    h += '</div>';
+
+    // Projects & Quests
+    if (proj) {
+      var badge = proj.quest_done
+        ? '<span class="quest-badge quest-done">&#10003; Quest complete</span>'
+        : '<span class="quest-badge quest-progress">Quest in progress</span>';
+      h += '<div class="section"><div class="section-title">Projects &amp; Quests</div>' +
+        '<div class="project-card">' +
+        '<div class="name">' + esc(proj.name) + '</div>' +
+        '<div class="tagline">' + esc(proj.tagline) + '</div>' +
+        '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="project-meta"><span>' + proj.participants + ' neighbours joined</span><span>' + proj.your_q_done + '/5 quests</span></div>' +
+        badge + '</div></div>';
+    }
+
+    // Block Pulse
+    h += '<div class="section"><div class="section-title">Block Pulse</div>' +
+      '<div class="pulse-card"><div class="pulse-dot"></div>' +
+      '<div class="pulse-text"><strong>' + (pulse.members || 0) + '</strong> members active on your block</div></div></div>';
+
+    // PWA Install
+    h += '<div class="section"><div class="install-card">' +
+      '<p>Add Block Share to your home screen for quick access.</p>' +
+      '<button class="btn btn-green" id="installBtn">Add to Home Screen</button>' +
+      '</div></div>';
+
+    document.getElementById('app').innerHTML = h;
+
+    var deferred = null;
+    window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferred = e; });
+    var btn = document.getElementById('installBtn');
+    if (btn) btn.addEventListener('click', function() {
+      deferred ? deferred.prompt() : alert('Tap Share then Add to Home Screen.');
+    });
+  }
+
+  function showError(msg) {
+    document.getElementById('app').innerHTML = '<div class="error-msg">' + msg + '</div>';
+  }
+
+  if (!token) { showError('Session expired. Please scan your QR code again.'); return; }
+
+  // Fetch both APIs in parallel; render as soon as home resolves
+  var homeData = null, itemsData = null, homeReady = false, itemsReady = false;
+
+  function tryRender() { if (homeReady) render(homeData, itemsData); }
+
+  fetch(HOME_API + '?uid=' + uid + '&token=' + token)
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(d) { homeData = d; homeReady = true; tryRender(); })
+    .catch(function(e) { showError('Could not load your home page. (' + e + ')'); });
+
+  fetch(ITEMS_API + '?uid=' + uid + '&token=' + token)
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) { itemsData = d; itemsReady = true; tryRender(); })
+    .catch(function() { itemsReady = true; tryRender(); });
+
+})();
+</script>
+</body>
+</html>
