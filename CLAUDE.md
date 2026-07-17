@@ -4,7 +4,7 @@
 
 | System | Location |
 |--------|----------|
-| React Native app | `/Users/wardstirrat/block-share-app-v2/` |
+| React Native app | `/Users/wardstirrat/Documents/GitHub/Blockshare App V2/block-share-app-v2/` |
 | GitHub repo | `thedecentralist/block-share-app-v2` |
 | Active feature branch | `claude/referral-links-qr-codes-eh6x2q` |
 
