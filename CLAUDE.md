@@ -98,8 +98,19 @@ QR Code / referral link
 }
 ```
 
-## Pending Work (as of 2026-07-16)
+## Server Status (as of 2026-07-17)
 
-- **Command 2** — write `home.html` (personalized dashboard) + `manifest.json` to `blockshare-onboarding-v2/` via DigitalOcean Console
-- **Command 3** — patch `blockshare-onboarding-page.php` to add `/home/` and `/bs-manifest.json` routes, update quest redirect, flush rewrites
-- After Commands 2+3: full flow is testable end-to-end via QR scan
+All routes live and returning 200:
+- `app.blockshare.ca/join/` ✓
+- `app.blockshare.ca/quest/` ✓
+- `app.blockshare.ca/home/` ✓
+- `app.blockshare.ca/bs-manifest.json` ✓
+
+Full join → quest → home flow is testable end-to-end via QR scan.
+
+## Pending Work
+
+- End-to-end test with a real user token through the full QR → join → quest → home flow
+- Enrich `home.html` with Sharing Economy section (available items near you, your active listings)
+- Block Pulse feed (real activity events, not just member count)
+- `me/referral.tsx` screen is on branch `claude/referral-links-qr-codes-eh6x2q` — not yet merged to main
