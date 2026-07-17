@@ -34,6 +34,7 @@ Base: `/wp-json/blockshare/v1/`
 | `/register` | POST | New user registration |
 | `/survey` | POST | Submit quest answers |
 | `/home` | GET | Personalized dashboard data |
+| `/items` | GET | Sharing Economy — `nearby` + `mine` arrays |
 | `/referral-code` | GET | User's referral code + stats |
 | `/referral-info` | GET | Validate an inbound referral code |
 
@@ -98,19 +99,29 @@ QR Code / referral link
 }
 ```
 
-## Server Status (as of 2026-07-17)
+## Server Deploy Pattern
+
+`home.html` (and future web files) live in `wp-plugin/` in this repo. Deploy with:
+
+```bash
+curl -fsSo /var/www/html/wp-content/plugins/blockshare-onboarding-v2/home.html \
+  https://raw.githubusercontent.com/thedecentralist/block-share-app-v2/main/wp-plugin/home.html
+```
+
+Edit locally → commit → push → curl on server. No base64 needed.
+
+## Server Status (as of 2026-07-16)
 
 All routes live and returning 200:
 - `app.blockshare.ca/join/` ✓
 - `app.blockshare.ca/quest/` ✓
-- `app.blockshare.ca/home/` ✓
+- `app.blockshare.ca/home/` ✓ (with Sharing Economy section)
 - `app.blockshare.ca/bs-manifest.json` ✓
 
-Full join → quest → home flow is testable end-to-end via QR scan.
+`wp_bs_items` table seeded with 3 items for user 2 (Pressure Washer, Camping Tent, Stand Mixer).
 
 ## Pending Work
 
-- End-to-end test with a real user token through the full QR → join → quest → home flow
-- Enrich `home.html` with Sharing Economy section (available items near you, your active listings)
 - Block Pulse feed (real activity events, not just member count)
+- UI for adding/managing shared items (the "+ Share an Item" button is a stub)
 - `me/referral.tsx` screen is on branch `claude/referral-links-qr-codes-eh6x2q` — not yet merged to main
