@@ -85,7 +85,7 @@ function bs_api_feed($req) {
             'user_joined'     => '&#x1F44B;',
             'item_shared'     => '&#x1F4E6;',
             'quest_completed' => '&#x2705;',
-            'referral_used'   => '&#x1F517;',
+            'referral_used'   => '&#x1F91D;',
         ];
         $texts = [
             'user_joined'     => ($p['name'] ?? 'Someone') . ' joined Block ' . ($p['block'] ?? ''),
